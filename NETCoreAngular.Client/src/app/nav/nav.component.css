@@ -1,0 +1,7 @@
+.dropdown-toggle, .dropdown-item{
+    cursor: pointer;
+}
+.dropdown-item:hover{
+    background-color: rgb(65, 65, 65);
+    color: rgb(225, 225, 225);
+}
