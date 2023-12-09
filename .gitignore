@@ -486,3 +486,5 @@ $RECYCLE.BIN/
 # Vim temporary swap files
 *.swp
 NETCoreAngular.API/appsettings.json
+NETCoreAngular.API/api.db-shm
+NETCoreAngular.API/api.db-wal
