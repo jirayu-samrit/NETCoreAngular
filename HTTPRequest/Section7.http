@@ -1,0 +1,22 @@
+@hostname = localhost
+@port = 5001
+@BaseUri = https://{{hostname}}:{{port}}
+@contentType = application/json
+
+# @name getNullRefError
+GET {{BaseUri}}/api/buggy/server-error
+
+
+###########################
+# @name getNullRefError
+GET {{BaseUri}}/api/buggy/auth
+
+
+###########################
+# @name getNotfound
+GET {{BaseUri}}/api/buggy/not-found
+
+
+###########################
+# @name getBadRequest
+GET {{BaseUri}}/api/buggy/bad-request

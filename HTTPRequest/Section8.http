@@ -1,0 +1,26 @@
+@hostname = localhost
+@port = 5001
+@BaseUri = https://{{hostname}}:{{port}}
+@contentType = application/json
+
+##############################
+# @name loginAndSaveToken
+POST {{BaseUri}}/api/account/login
+Content-Type: {{contentType}}
+
+{
+    "username":"janis",
+    "password":"Pa$$w0rd"
+}
+
+##############################
+# @name getUsers
+GET {{BaseUri}}/api/users
+
+##############################
+# @name getUserByUsername
+
+@authToken = {{loginAndSaveToken.response.body.$.token}}
+GET {{BaseUri}}/api/users/janis
+Content-Type: {{contentType}}
+Authorization: bearer {{authToken}}

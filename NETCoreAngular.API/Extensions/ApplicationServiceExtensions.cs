@@ -17,6 +17,8 @@ public static class ApplicationServiceExtension
                 opt.UseSqlite(config.GetConnectionString("DefaultConnection"));
             });
         services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IUserReposioty, UserRepository>();
+        services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
         return services;
     }

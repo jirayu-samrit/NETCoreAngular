@@ -1,0 +1,12 @@
+@hostname = localhost
+@port = 5001
+@BaseUri = https://{{hostname}}:{{port}}
+@contentType = application/json
+
+# @name getAllUsers
+GET {{BaseUri}}/api/users
+
+########################
+
+# @name getUser
+GET {{BaseUri}}/api/users/3
