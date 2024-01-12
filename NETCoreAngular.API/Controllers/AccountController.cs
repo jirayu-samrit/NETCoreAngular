@@ -1,6 +1,7 @@
 
 using System.Security.Cryptography;
 using System.Text;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NETCoreAngular.API.Data;
@@ -13,13 +14,13 @@ public class AccountController : BaseApiController
 {
     private readonly DataContext _context;
     private readonly ITokenService _tokenService;
+    private readonly IMapper _mapper;
 
-
-    public AccountController(DataContext context, ITokenService tokenService)
+    public AccountController(DataContext context, ITokenService tokenService, IMapper mapper)
     {
         _context = context;
         _tokenService = tokenService;
-
+        _mapper = mapper;
     }
 
     [HttpPost("register")] // POST: /api/account/register?username=sam&password=password
@@ -30,20 +31,22 @@ public class AccountController : BaseApiController
             return BadRequest("Username has already exist.");
         }
 
-        using var hmac = new HMACSHA512();
-        var newUser = new AppUser()
-        {
-            UserName = registerDto.Username.ToLower(),
-            PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDto.Password)),
-            PasswordSalt = hmac.Key
-        };
+        var user = _mapper.Map<AppUser>(registerDto);
 
-        _context.Users.Add(newUser);
+        using var hmac = new HMACSHA512();
+
+        user.UserName = registerDto.Username.ToLower();
+        user.PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDto.Password));
+        user.PasswordSalt = hmac.Key;
+
+        _context.Users.Add(user);
         await _context.SaveChangesAsync();
 
-        var loginUser = new UserDto{
-            Username = newUser.UserName,
-            Token = _tokenService.CreateToken(newUser)
+        var loginUser = new UserDto
+        {
+            Username = user.UserName,
+            Token = _tokenService.CreateToken(user),
+            KnownAs = user.KnownAs
         };
 
         return loginUser;
@@ -54,23 +57,25 @@ public class AccountController : BaseApiController
     public async Task<ActionResult<UserDto>> login(LoginDto loginDto)
     {
         var user = await _context.Users
-                    .Include(p=>p.Photos)
+                    .Include(p => p.Photos)
                     .SingleOrDefaultAsync(u => u.UserName.ToLower() == loginDto.Username.ToLower());
         if (user == null) return Unauthorized("User does not exist.");
 
         using var hmac = new HMACSHA512(user.PasswordSalt);
         var computeHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(loginDto.Password));
         if (computeHash.Length != user.PasswordHash.Length) return Unauthorized("Invaid Password");
-        
+
         for (int i = 0; i < computeHash.Length; i++)
         {
             if (computeHash[i] != user.PasswordHash[i]) return Unauthorized("Invaid Password");
         }
 
-        var loginUser = new UserDto{
+        var loginUser = new UserDto
+        {
             Username = user.UserName,
             Token = _tokenService.CreateToken(user),
-            PhotoUrl = user.Photos.FirstOrDefault(p=>p.IsMain)?.Url
+            PhotoUrl = user.Photos.FirstOrDefault(p => p.IsMain)?.Url,
+            KnownAs = user.KnownAs
         };
 
         return loginUser;
