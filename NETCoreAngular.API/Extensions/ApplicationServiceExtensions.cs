@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NETCoreAngular.API.Data;
+using NETCoreAngular.API.Heplers;
 using NETCoreAngular.API.Interfaces;
 using NETCoreAngular.API.Services;
 
@@ -12,12 +13,18 @@ public static class ApplicationServiceExtension
     public static IServiceCollection AddApplicationServices(this IServiceCollection services
     , IConfiguration config)
     {
+        services.Configure<CloudinarySettings>(config.GetSection("CloudinarySettings"));
+
         services.AddDbContext<DataContext>(opt =>
             {
                 opt.UseSqlite(config.GetConnectionString("DefaultConnection"));
             });
+
         services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IPhotoService, PhotoService>();
+
         services.AddScoped<IUserReposioty, UserRepository>();
+
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
         return services;

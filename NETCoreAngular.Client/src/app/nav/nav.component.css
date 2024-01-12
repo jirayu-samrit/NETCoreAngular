@@ -5,3 +5,9 @@
     background-color: rgb(65, 65, 65);
     color: rgb(225, 225, 225);
 }
+img{
+    max-height: 50px;
+    border: 2px solid white;
+    border-radius: 100%;
+    display: inline;
+}
