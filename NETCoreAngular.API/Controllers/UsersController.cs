@@ -7,6 +7,7 @@ using NETCoreAngular.API.Data;
 using NETCoreAngular.API.DTOs;
 using NETCoreAngular.API.Entities;
 using NETCoreAngular.API.Extensions;
+using NETCoreAngular.API.Heplers;
 using NETCoreAngular.API.Interfaces;
 
 namespace NETCoreAngular.API.Controllers;
@@ -26,9 +27,19 @@ public class UsersController : BaseApiController
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers()
+    public async Task<ActionResult<PagedList<MemberDto>>> GetUsers([FromQuery] UserParams userParams)
     {
-        var users = await _userReposioty.GetMembersAsync();
+        var currentUser = await _userReposioty.GetUserByUsernameAsync(User.GetUsername());
+        userParams.CurrentUsername = currentUser.UserName;
+
+        if (string.IsNullOrEmpty(userParams.Gender))
+        {
+            userParams.Gender = currentUser.Gender == "male" ? "female" : "male";
+        }
+
+        var users = await _userReposioty.GetMembersAsync(userParams);
+
+        Response.AddPaginationHeader(new PaginationHeader(users.CurrentPage, users.PageSize, users.TotalCount, users.TotalPages));
         return Ok(users);
 
     }
@@ -75,7 +86,7 @@ public class UsersController : BaseApiController
 
         if (await _userReposioty.SaveAllAsync())
         {
-            return CreatedAtAction(nameof(GetUser), new {username = user.UserName}, _mapper.Map<PhotoDto>(photo));
+            return CreatedAtAction(nameof(GetUser), new { username = user.UserName }, _mapper.Map<PhotoDto>(photo));
         }
 
         return BadRequest("Problem adding photo");
@@ -85,19 +96,19 @@ public class UsersController : BaseApiController
     public async Task<ActionResult> SetMainPhoto(int photoId)
     {
         var user = await _userReposioty.GetUserByUsernameAsync(User.GetUsername());
-        if(user==null) return NotFound();
+        if (user == null) return NotFound();
 
-        var photo = user.Photos.FirstOrDefault(p=>p.Id == photoId);
-        if(photo == null) return NotFound();
+        var photo = user.Photos.FirstOrDefault(p => p.Id == photoId);
+        if (photo == null) return NotFound();
 
-        if(photo.IsMain) return BadRequest("this photo is already your main photo");
+        if (photo.IsMain) return BadRequest("this photo is already your main photo");
 
-        var currentMain = user.Photos.FirstOrDefault(p=>p.IsMain);
-        if(currentMain!=null) currentMain.IsMain = false;
+        var currentMain = user.Photos.FirstOrDefault(p => p.IsMain);
+        if (currentMain != null) currentMain.IsMain = false;
 
         photo.IsMain = true;
 
-        if(await _userReposioty.SaveAllAsync()) return NoContent();
+        if (await _userReposioty.SaveAllAsync()) return NoContent();
 
         return BadRequest("Problem setting the main photo");
     }
@@ -106,20 +117,20 @@ public class UsersController : BaseApiController
     public async Task<ActionResult> DeletePhoto(int photoId)
     {
         var user = await _userReposioty.GetUserByUsernameAsync(User.GetUsername());
-        if(user==null) return NotFound();
+        if (user == null) return NotFound();
 
-        var photo = user.Photos.FirstOrDefault(p=>p.Id == photoId);
-        if(photo == null) return NotFound();
+        var photo = user.Photos.FirstOrDefault(p => p.Id == photoId);
+        if (photo == null) return NotFound();
 
-        if(photo.IsMain) return BadRequest("You cannot delete your main photo");
-        if(photo.PublicId !=null)
+        if (photo.IsMain) return BadRequest("You cannot delete your main photo");
+        if (photo.PublicId != null)
         {
             var result = await _photoService.DeletePhotoAsync(photo.PublicId);
-            if(result.Error !=null)  return BadRequest(result.Error.Message);
+            if (result.Error != null) return BadRequest(result.Error.Message);
         }
 
         user.Photos.Remove(photo);
-        if(await _userReposioty.SaveAllAsync()) return Ok();
+        if (await _userReposioty.SaveAllAsync()) return Ok();
 
         return BadRequest("Problem deleting photo");
     }
