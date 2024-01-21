@@ -24,6 +24,7 @@ public static class ApplicationServiceExtension
         services.AddScoped<IPhotoService, PhotoService>();
 
         services.AddScoped<IUserReposioty, UserRepository>();
+        services.AddScoped<ILikesPrository, LikesRepository>();
         services.AddScoped<LogUserActivity>();
 
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
