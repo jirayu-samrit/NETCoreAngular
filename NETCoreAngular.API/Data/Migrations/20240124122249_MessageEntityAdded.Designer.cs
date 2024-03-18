@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NETCoreAngular.API.Data;
 
@@ -10,9 +11,11 @@ using NETCoreAngular.API.Data;
 namespace NETCoreAngular.API.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20240124122249_MessageEntityAdded")]
+    partial class MessageEntityAdded
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "7.0.14");
@@ -79,7 +82,7 @@ namespace NETCoreAngular.API.Data.Migrations
                     b.Property<DateTime?>("DateRead")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("MessageSent")
+                    b.Property<DateTime>("MessageSend")
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("RecipientDeleted")
@@ -87,9 +90,6 @@ namespace NETCoreAngular.API.Data.Migrations
 
                     b.Property<int>("RecipientId")
                         .HasColumnType("INTEGER");
-
-                    b.Property<string>("RecipientUsername")
-                        .HasColumnType("TEXT");
 
                     b.Property<bool>("SenderDeleted")
                         .HasColumnType("INTEGER");
